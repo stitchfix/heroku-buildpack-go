@@ -2,6 +2,53 @@
 
 ## Unreleased
 
+#v46
+
+go1.7 released, drop support for go1.5.X
+
+#v45
+
+go1.7rc5 is the default for go1.7
+GOVERSION & GO_INSTALL_PACKAGE_SPEC take priority over config files for godep/govendor. This is to help people deploying the same repo to multiple apps, allowing them to compile only specific packages and choose different go versions.
+
+#v44
+
+go1.7rc3 is the default for go1.7
+
+#v43 (2016-07-19)
+
+go1.7rc1 is the default for go1.7
+Use go1.7rc2 and go1.6.3
+
+## v42 (2016-07-07)
+
+Official README image
+glide support
+go1.7beta2 is the default for go1.7
+Release notes for internal people
+Remove the need for Procfiles in simple situations
+
+## v41 (2016-06-01)
+
+GB: .go files only in src/ aren't valid and we shouldn't detect them as such. So -mindepth 2 added to GB detection
+Make detection and compile ordering the same
+Normalize names and location of functions
+Support go1.7beta1
+Add Travis CI image to README
+
+## v40 (2016-05-18)
+
+Bump govendor to 1.0.3
+
+## v39 (2016-05-17)
+
+Support govendor sync.
+
+## v38 (2016-05-13)
+
+Add '${build_dir}' substitution to build time environment variables. This is mainly useful for CGO support of vendored libs/includes
+No longer set GOMAXPROCS defaults for go1.5+
+
 ## v37 (2016-05-09)
 
 Bump GB to 0.4.1, remove beta warning

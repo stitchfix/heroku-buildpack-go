@@ -1,9 +1,12 @@
-# Heroku Buildpack: Go
+![travis ci](https://travis-ci.org/heroku/heroku-buildpack-go.svg?branch=master)
 
-This is the [Heroku buildpack][buildpack] for [Go][go].
+# Heroku Buildpack for Go
+
+![Heroku Buildpack for Go](https://cloud.githubusercontent.com/assets/51578/15877053/53506724-2cdf-11e6-878c-e2ef60ba741f.png)
+
+This is the official [Heroku buildpack][buildpack] for [Go][go].
 
 ## Getting Started
-
 
 Follow the guide at
 <https://devcenter.heroku.com/articles/getting-started-with-go>
@@ -28,7 +31,7 @@ $ git push heroku master
 ...
 -----> Fetching custom git buildpack... done
 -----> Go app detected
------> Installing go1.4.1... done
+-----> Installing go1.7... done
 -----> Running: godep go install -tags heroku ./...
 -----> Discovering process types
        Procfile declares types -> web
@@ -40,8 +43,9 @@ $ git push heroku master
 
 This buildpack will detect your repository as Go if you are using either:
 
-- [Godep][godep]
 - [GB][gb]
+- [glide][glide]
+- [Godep][godep]
 - [govendor][govendor]
 
 This buildpack adds a `heroku` [build constraint][build-constraint], to enable
@@ -74,7 +78,7 @@ top level json keys:
    includes any packages in your `vendor` directory.
 
 
-Example with everything, for a project using `go1.6`, located at
+Example with everything, for a project using `go1.7`, located at
 `$GOPATH/src/github.com/heroku/go-getting-started` and requiring a single package
 spec of `./...` to install.
 
@@ -84,7 +88,7 @@ spec of `./...` to install.
     "rootPath": "github.com/heroku/go-getting-started",
     "heroku": {
         "install" : [ "./..." ],
-        "goVersion": "go1.6"
+        "goVersion": "go1.7"
          },
     ...
 }
@@ -93,13 +97,40 @@ spec of `./...` to install.
 A tool like jq or a text editor can be used to inject these variables into
 `vendor/vendor.json`.
 
+## glide specifics
+
+The `glide.yaml` and `glide.lock` files do not allow for arbitrary metadata, so
+the buildpack relies solely on the glide command and environment variables to
+control the build process.
+
+The base package name is determined by running `glide name`.
+
+The Go version used to compile code defaults to the latest released version of Go.
+This can be overridden by the `$GOVERSION` environment variable. Setting
+`$GOVERSION` to a major version will result in the buildpack using the
+latest released minor version in that series. Setting `$GOVERSION` to a specific
+minor Go version will pin Go to that version. Examples:
+
+```console
+$ heroku config:set GOVERSION=go1.7   # Will use go1.7.X, Where X is that latest minor release in the 1.7 series
+$ heroku config:set GOVERSION=go1.6.3 # Pins to go1.6.3
+```
+
+Installation defaults to `.`. This can be overridden by setting the
+`$GO_INSTALL_PACKAGE_SPEC` environment variable to the package spec you want the
+go tool chain to install. Example:
+
+```console
+$ heroku config:set GO_INSTALL_PACKAGE_SPEC=./...
+$ git push heroku master
+```
+
+
 ## Hacking on this Buildpack
 
-To change this buildpack, fork it on GitHub. Push changes to your fork, then
-create a test app with `--buildpack YOUR_GITHUB_GIT_URL` and push to it. If you
-already have an existing app you may use `heroku config:add
-BUILDPACK_URL=YOUR_GITHUB_GIT_URL` instead of `--buildpack`.
-
+To change this buildpack, fork it on GitHub & push changes to your fork. Ensure
+that tests have been added to the `test/run` script and any corresponding fixtures to
+`test/fixtures/<fixture name>`.
 
 ### Tests
 
@@ -111,11 +142,13 @@ $ make test
 
 ## Using with cgo
 
-This buildpack supports building with C dependencies via [cgo][cgo]. You can set
-config vars to specify CGO flags to specify paths for vendored dependencies. For
-example, if you added C headers to and `includes` directory, add the config var
-`CGO_CFLAGS` with the value `-I/app/code/includes` and include the relevant
-header files in `includes/` in your app.
+The buildpack supports building with C dependencies via [cgo][cgo]. You can set
+config vars to specify CGO flags to specify paths for vendored dependencies. The
+literal text of `${build_dir}` will be replaced with the directory the build is
+happening in. For example, if you added C headers to an `includes/` directory,
+add the following config to your app: `heroku config:set CGO_CFLAGS='-I${
+build_dir}/includes'`. Note the used of `''` to ensure they are not converted to
+local environment variables
 
 ## Using a development version of Go
 
@@ -144,6 +177,18 @@ pushing code. If `GO_LINKER_SYMBOL` is set, but `GO_LINKER_VALUE` isn't set then
 This can be used to embed the commit sha, or other build specific data directly
 into the compiled executable.
 
+## Deploying
+
+```console
+$ heroku buildkits:publish heroku/go
+$ # This tells you the new version number
+$ # Update the Changelog with it
+$ git commit -am "vXXX"
+$ git tag vXXX
+$ git push && git push --tags
+$ # Add a heroku changelog item (if notable)
+```
+
 [go]: http://golang.org/
 [buildpack]: http://devcenter.heroku.com/articles/buildpacks
 [go-linker]: https://golang.org/cmd/ld/
@@ -157,4 +202,4 @@ into the compiled executable.
 [cgo]: http://golang.org/cmd/cgo/
 [vendor.json]: https://github.com/kardianos/vendor-spec
 [gopgsqldriver]: https://github.com/jbarham/gopgsqldriver
-[grp]: https://github.com/kardianos/govendor/commit/81ca4f23cab56f287e1d5be5ab920746fd6fb834
+[glide]: https://github.com/Masterminds/glide
