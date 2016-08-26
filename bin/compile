@@ -541,6 +541,8 @@ rm -rf $build/.heroku
 mkdir -p $build/.profile.d
 echo 'PATH=$PATH:$HOME/bin' > $build/.profile.d/go.sh
 
+cp $buildpack/$plat/bin/goose $build/bin
+
 if needConcurrency ${ver};
   then
   cp $buildpack/vendor/concurrency.sh $build/.profile.d/
